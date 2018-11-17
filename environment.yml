@@ -5,9 +5,15 @@ channels:
 dependencies:
   - pytorch
   - torchvision
+  - tensorflow
   - cuda92
   - jupyter
   - notebook
   - matplotlib
-  - tqdm
   - numpy
+  - pandas
+  - Pillow
+  - tqdm
+  - pytest
+  - pip:
+      - ./ml-agents
