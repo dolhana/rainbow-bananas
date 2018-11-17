@@ -1,0 +1,12 @@
+name: "udacity-mlagents"
+dependencies:
+  - tensorflow
+  - Pillow
+  - matplotlib
+  - numpy
+  - jupyter
+  - pytest
+  - docopt
+  - pyyaml
+  - protobuf
+  - grpcio
