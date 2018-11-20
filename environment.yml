@@ -16,5 +16,4 @@ dependencies:
   - tqdm
   - pytest
   - pip:
-      - ./ml-agents
       - ./unityagents
