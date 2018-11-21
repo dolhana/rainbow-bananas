@@ -34,14 +34,18 @@ class DQNAgent():
         """
         self.state_size = state_size
         self.n_actions = n_actions
+        self.device = device
+
+        # Hyper-parameters
         self.hidden_units = hidden_units
         self.learning_rate = learning_rate
         self.batch_size = batch_size
         self.gamma = gamma
         self.replay_buffer_capacity = replay_buffer_capacity
         self.update_interval = update_interval
-        self.device = device
+        self.tau = tau
 
+        # Deep Q-network
         self.online_network = model.QNetwork(state_size, n_actions, hidden_units).to(device)
         self.target_network = copy.deepcopy(self.online_network)
         self.optimizer = optim.Adam(self.online_network.parameters(), learning_rate)
@@ -78,18 +82,18 @@ class DQNAgent():
         """Observes and stores an experience
         """
         # step_count is needed for soft-update, (TODO) epsilon shaping and (TODO) learning_rate shaping
-        step_count += 1
+        self.step_count += 1
 
         # TODO Is limiting the size of replay_buffer by slicing efficient enough?
         self.replay_buffer.append((state, action, reward, next_state, done))
         self.replay_buffer = self.replay_buffer[-self.replay_buffer_capacity:]
 
         # TODO Sample a batch from the replay_buffer
-        experiece_sample = random.choices(self.replay_buffer, k=self.batch_size)
+        experience_sample = random.choices(self.replay_buffer, k=self.batch_size)
 
         self.learn(experience_sample)
 
-        if (step_count % self.update_interval == 0
+        if (self.step_count % self.update_interval == 0
             and len(self.replay_buffer) >= self.batch_size):
             self.soft_update()
 
@@ -100,8 +104,8 @@ class DQNAgent():
 
         # TD target
         s1_value = self.target_network(s1).detach().max(dim=1)
-        td_target = r + np.logical_not(done) * gamma * s1_value
-        expteced = self.online_network(s0).gather(dim=1, index=a)
+        td_target = r + np.logical_not(done) * self.gamma * s1_value
+        expected = self.online_network(s0).gather(dim=1, index=a)
 
         # Loss
         loss = self.losser.loss(expected, td_target)
@@ -115,8 +119,8 @@ class DQNAgent():
         """Updates the target network so that it moves toward to the online network
         """
         for target_param, online_param in \
-            zip(self.target_network.parameters(), self.online_network.parameters()):
-            target_param.data.copy_(self.tau)
+                zip(self.target_network.parameters(), self.online_network.parameters()):
+            target_param.data.copy_(self.tau * target_param + (1. - self.tau) * online_param)
 
 
 def manual_random_seed(seed):
