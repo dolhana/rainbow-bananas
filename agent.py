@@ -8,6 +8,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
+from replaybuffer import ReplayBuffer
 import model
 
 
@@ -34,21 +35,23 @@ class DQNAgent():
         """
         self.state_size = state_size
         self.n_actions = n_actions
+        self.device = device
+
+        # hyper-params
         self.hidden_units = hidden_units
         self.learning_rate = learning_rate
         self.batch_size = batch_size
         self.gamma = gamma
         self.replay_buffer_capacity = replay_buffer_capacity
         self.update_interval = update_interval
-        self.device = device
+        self.tau = tau
 
         self.online_network = model.QNetwork(state_size, n_actions, hidden_units).to(device)
         self.target_network = copy.deepcopy(self.online_network)
         self.optimizer = optim.Adam(self.online_network.parameters(), learning_rate)
         self.losser = torch.nn.MSELoss()
 
-        # TODO Does replay_buffer need more ecapsulation?
-        self.replay_buffer = []
+        self.replay_buffer = ReplayBuffer(replay_buffer_capacity, state_size)
 
         self.step_count = 0
 
@@ -72,43 +75,43 @@ class DQNAgent():
         Returns:
           numpy.array(): the values of all actions
         """
-        return self.online_network(state).cpu().detach().numpy()
+        return self.online_network(torch.as_tensor(state, dtype=torch.float)).cpu().detach().numpy()
 
     def observe_and_learn(self, state, action, reward, next_state, done):
         """Observes and stores an experience
         """
         # step_count is needed for soft-update, (TODO) epsilon shaping and (TODO) learning_rate shaping
-        step_count += 1
+        self.step_count += 1
 
-        # TODO Is limiting the size of replay_buffer by slicing efficient enough?
-        self.replay_buffer.append((state, action, reward, next_state, done))
-        self.replay_buffer = self.replay_buffer[-self.replay_buffer_capacity:]
+        self.replay_buffer.store(state, action, reward, next_state, done)
 
         # TODO Sample a batch from the replay_buffer
-        experiece_sample = random.choices(self.replay_buffer, k=self.batch_size)
+        experience_sample = self.replay_buffer.sample(self.batch_size)
 
         self.learn(experience_sample)
 
-        if (step_count % self.update_interval == 0
+        if (self.step_count % self.update_interval == 0
             and len(self.replay_buffer) >= self.batch_size):
             self.soft_update()
 
     def learn(self, experiences):
         """Learns from experiences
         """
-        s0, r, a, s1, done = (np.vstack(e) for e in zip(*experiences))
+        s0, a, r, s1, done = experiences
+        if len(s0) == 0:
+            return
 
         # TD target
-        s1_value = self.target_network(s1).detach().max(dim=1)
-        td_target = r + np.logical_not(done) * gamma * s1_value
-        expteced = self.online_network(s0).gather(dim=1, index=a)
+        s1_value = self.target_network(s1).detach().max(dim=1, keepdim=True)[0]
+        td_target = r + (1 - done).float() * self.gamma * s1_value
+        expected = self.online_network(s0).gather(dim=1, index=a.long())
 
         # Loss
-        loss = self.losser.loss(expected, td_target)
+        loss = self.losser(expected, td_target)
 
         # Minimize the loss
         self.optimizer.zero_grad()
-        loss.backword()
+        loss.backward()
         self.optimizer.step()
 
     def soft_update(self):
@@ -116,7 +119,7 @@ class DQNAgent():
         """
         for target_param, online_param in \
             zip(self.target_network.parameters(), self.online_network.parameters()):
-            target_param.data.copy_(self.tau)
+            target_param.data.copy_(self.tau * online_param + (1. - self.tau) * target_param)
 
 
 def manual_random_seed(seed):

@@ -1,6 +1,7 @@
 name: banana
 channels:
   - pytorch
+  - conda-forge
   - defaults
 dependencies:
   - pytorch
@@ -9,6 +10,7 @@ dependencies:
   - cuda92
   - jupyter
   - notebook
+  - jupyter_contrib_nbextensions
   - matplotlib
   - numpy
   - pandas
