@@ -4,7 +4,7 @@ channels:
   - defaults
 dependencies:
   - pytorch
-  - torchvision
+  #- torchvision
   - tensorflow
   - cuda92
   - jupyter

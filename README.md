@@ -53,7 +53,7 @@ unzip Banana_Linux.zip
 This project assumes Linux but the binaries for other OSes are also available to download.
 
 * [Banana_Linux.zip for Linux][banana-linux-zip]
-* [Banana.app.aip for Mac OSX][banana-osx-zip]
+* [Banana.app.app for Mac OSX][banana-osx-zip]
 * [Banana_Windows_x86.zip for Windows (32-bit)][banana-windows-x86]
 * [Banana_Windows_x86_64.zip for Windows (64-bit)][banana-windows-x86-64]
 
