@@ -4,40 +4,25 @@ import torch.nn.functional as F
 
 
 class QNetwork(nn.Module):
-    """Q-network used to calculate the values of all actions at a given state"""
+    """Actor (Policy) Model."""
 
-    def __init__(self, state_size, n_actions, hidden_units, device='cpu'):
-        """Initialize the Q-network"""
+    def __init__(self, state_size, action_size, fc1_units=64, fc2_units=64):
+        """Builds a model
+
+        Args:
+          state_size (int): dimension of each state
+          action_size (int): dimension of each action
+          seed (int): random seed
+          fc1_units (int): the number of nodes in first hidden layer
+          fc2_units (int): the number of nodes in second hidden layer
+        """
         super(QNetwork, self).__init__()
-        self.state_size = state_size
-        self.n_actions = n_actions
-        self.hidden_unites = hidden_units
-        self.device = device
-
-        self.layers = []
-        input_size = state_size
-        if hidden_units:
-            for i, units in enumerate(hidden_units):
-                # Submodules have to be registered explicitly since they are not
-                # imediate attributes of this module
-                layer = nn.Linear(input_size, units)
-                self.add_module(f'hidden_{i}', layer)
-
-                self.layers.append(layer)
-                input_size = units
-        output_layer = nn.Linear(input_size, n_actions)
-        self.add_module('out', output_layer)
-        self.layers.append(output_layer)
-
-        # TODO when to initialize the network params?
+        self.fc1 = nn.Linear(state_size, fc1_units)
+        self.fc2 = nn.Linear(fc1_units, fc2_units)
+        self.fc3 = nn.Linear(fc2_units, action_size)
 
     def forward(self, state):
-        """Forwards the state through the network and gets the values for all
-        actions
-        """
-        x = state
-        for layer in self.layers[:-1]:
-            z = layer(x)
-            a = F.relu(z)
-            x = a
-        return self.layers[-1](x)
+        """Builds a network that maps state -> action values"""
+        x = F.relu(self.fc1(state))
+        x = F.relu(self.fc2(x))
+        return self.fc3(x)

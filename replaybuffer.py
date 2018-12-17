@@ -1,51 +1,57 @@
+"""Replay Buffer"""
+from collections import namedtuple, deque
+import random
+import numpy as np
 import torch
 
 
 class ReplayBuffer:
+    """Fixed-size buffer to store expereince tuples.
+    """
 
-    def __init__(self, capacity, state_size, device='cpu'):
-        self.capacity = capacity
-        self.state_size = state_size
+    def __init__(self, action_size, buffer_size, batch_size, device=torch.device('cpu')):
+        """A ReplayBuffer
 
-        self._insert = 0
-        self._full = False
-        self._states = torch.empty(capacity, state_size, dtype=torch.float)
-        self._actions = torch.empty(capacity, 1, dtype=torch.uint8)
-        self._rewards = torch.empty(capacity, 1, dtype=torch.float)
-        self._next_states = torch.empty(capacity, state_size, dtype=torch.float)
-        self._dones = torch.empty(capacity, 1, dtype=torch.uint8)
-
-    def store(self, state, action, reward, next_state, done):
-        self._states[self._insert] = torch.as_tensor(state, dtype=torch.float)
-        self._actions[self._insert] = torch.as_tensor(action, dtype=torch.float)
-        self._rewards[self._insert] = torch.as_tensor(reward, dtype=torch.float)
-        self._dones[self._insert] = torch.as_tensor(done, dtype=torch.uint8)
-        self._insert += 1
-        if self._insert == self.capacity:
-            self._full = True
-            self._insert = 0
-
-    def sample(self, size):
-        """ Returns a sample with `size` elements
-
-        Returns:
-          (states, actions, rewards, next_states, dones):
-            if # of stored experiences >= size
-          (tensor([]), tensor([]), tensor([]), tensor([]), tensor([])):
-            otherwise
+        Args:
+          action_size (int): dimension of each action
+          buffer_size (int): maximum size of buffer
+          batch_size (int): size of each training batch
+          seed (int): random seed
         """
-        end = self._insert if not self._full else self.capacity
-        # If no stored experience, return empty tensors
-        if end == 0 or end < size:
-            empty_tensor = torch.empty(size=(0,))
-            return empty_tensor, empty_tensor, empty_tensor, empty_tensor, empty_tensor
-        idx = torch.randperm(end)[:size]
-        states = torch.index_select(self._states, 0, idx)
-        actions = torch.index_select(self._actions, 0, idx)
-        rewards = torch.index_select(self._rewards, 0, idx)
-        next_states = torch.index_select(self._next_states, 0, idx)
-        dones = torch.index_select(self._dones, 0, idx)
-        return states, actions, rewards, next_states, dones
+        self.action_size = action_size
+        self.device = device
+        self.memory = deque(maxlen=buffer_size)
+        self.batch_size = batch_size
+        self.experience = namedtuple(
+            'Experience',
+            field_names=['state', 'action', 'reward', 'next_state', 'done'])
+
+    def add(self, state, action, reward, next_state, done):
+        """Add a new experience to memory"""
+        self.memory.append(
+            self.experience(state, action, reward, next_state, done))
+
+    def sample(self):
+        """Randomly sample a batch of experiences from memory."""
+        experiences = random.sample(self.memory, k=self.batch_size)
+
+        states = torch.from_numpy(
+            np.vstack([e.state for e in experiences if e is not None])
+        ).float().to(self.device)
+        actions = torch.from_numpy(
+            np.vstack([e.action for e in experiences if e is not None])
+        ).long().to(self.device)
+        rewards = torch.from_numpy(
+            np.vstack([e.reward for e in experiences if e is not None])
+        ).float().to(self.device)
+        next_states = torch.from_numpy(
+            np.vstack([e.next_state for e in experiences if e is not None])
+        ).float().to(self.device)
+        dones = torch.from_numpy(
+            np.vstack([e.done for e in experiences if e is not None]).astype(np.uint8)
+        ).float().to(self.device)
+
+        return (states, actions, rewards, next_states, dones)
 
     def __len__(self):
-        return self._insert if not self._full else self.capacity
+        return len(self.memory)

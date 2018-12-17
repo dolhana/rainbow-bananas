@@ -1,21 +1,32 @@
-name: banana
+name: drlnd
 channels:
   - pytorch
   - conda-forge
   - defaults
 dependencies:
+  - python=3.6
   - pytorch
-  - torchvision
   - tensorflow
   - cuda92
   - jupyter
   - notebook
-  - jupyter_contrib_nbextensions
-  - matplotlib
-  - numpy
-  - pandas
   - Pillow
-  - tqdm
+  - pyglet
+  - PyOpenGL
+  - pyvirtualdisplay
+  - matplotlib
+  - seaborn
   - pytest
+  - docopt
+  - pyyaml
+  - pandas
+  - scipy
+  - ipykernel
+  - tqdm
+  - pylint
   - pip:
-      - ./unityagents
+      - gym[atari,box2d]
+      #- git+https://github.com/Kojoley/atari-py.git
+      - torchvision
+      - ./python
+      - jupyter-http-over-ws
