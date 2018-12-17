@@ -36,7 +36,7 @@ Based on the observation, the agent needs to learn how to select the best action
 
 ### Preparation
 
-You need to install the required python packages to be able to run this project. The required python packages are listed in `environment.yml`, which is a [conda][https://conda.io/docs/index.html] environment file. It will create a conda environment named `drlnd`.
+You need to install the required python packages to be able to run this project. The required python packages are listed in `environment.yml`, which is a [conda](https://conda.io/docs/index.html) environment file. It will create a conda environment named `drlnd`.
 
 
 ```bash
@@ -75,15 +75,24 @@ Now, you're ready to train the agent.
 
 ## Training The Agent
 
-```bash
-(banana) $ python -m train
-```
-
-## Running the trained agent
+You can see how to train the agent in Jupyter notebook `Report.ipnb`. To run the notebook, first start up Jupyter server with the following command.
 
 ```bash
-(banana) $ python -m play
+(base)$ conda activate drlnd
+(drlnd)$ jupyter notebook
+[I 07:12:35.811 NotebookApp] Serving notebooks from local directory: /home/handol/Code
+...
+    Copy/paste this URL into your browser when you connect for the first time,
+    to login with a token:
+        http://localhost:8888/?token=e406adf4c029503d5eae4888ec3bc9eb8b7f9a653e9d06bd
 ```
+
+It will open up the web browser. If not, open the browser manually and go to the URL as noted in the output.
+
+From the file list, open up `Report.ipnb` notebook. If you runs the notebook, the agent successfully achieves the goal within 1000 episodes most of the time.
+
+The successfully trained DQN parameters is saved in the file `p1_dqn_agent.pth`. When the file was recorded the agent reached the goal at episode **330**.
+
 
 ## Learning Algorithm
 
@@ -134,7 +143,7 @@ The agent is trained using [Deep Q-Learning algorithm][dqn-paper] along with the
 
   - 64
   
-With the above hyperparameters, the average score of the last 100 consecutive episodes reached 13.12 after 511 episodes.
+With the above hyperparameters, the average score of the last 100 consecutive episodes reached 13.0 after 330 episodes.
 
 [dqn-paper]: https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf
 

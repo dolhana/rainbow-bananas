@@ -100,6 +100,6 @@ def train(env, n_episodes=1000, max_t=1000, agent_kwargs={}, seed=None,
     return agent, scores
 
 
-if __name__ == '__main__':
-    env = UnityEnvironment(file_name='Banana_Linux_NoVis/Banana.x86_64')
-    train(env)
+# if __name__ == '__main__':
+#     env = UnityEnvironment(file_name='Banana_Linux_NoVis/Banana.x86_64')
+#     train(env)
