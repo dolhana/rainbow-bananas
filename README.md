@@ -89,7 +89,7 @@ You can see how to train the agent in Jupyter notebook `Report.ipnb`. To run the
 
 It will open up the web browser. If not, open the browser manually and go to the URL as noted in the output.
 
-From the file list, open up `Report.ipnb` notebook. If you runs the notebook, the agent successfully achieves the goal within 1000 episodes most of the time.
+From the file list, open up `Report.ipynb` notebook. If you runs the notebook, the agent successfully achieves the goal within 1000 episodes most of the time.
 
 The successfully trained DQN parameters is saved in the file `p1_dqn_agent.pth`. When the file was recorded the agent reached the goal at episode **330**.
 
@@ -147,7 +147,7 @@ With the above hyperparameters, the average score of the last 100 consecutive ep
 
 [dqn-paper]: https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf
 
-## Ideas for Future WOrk
+## Ideas for Future Work
 
 This project used the basic DQN algorithm. It can be improved by applying the following methods, which have been proved to overcome the weaknesses, especially the high bias of the basic DQN.
 
